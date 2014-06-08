@@ -86,7 +86,7 @@ public class PulseManager {
         }
 
         PulseMeta meta = new PulseMeta(id, forced, enabled);
-        getEnabledFromConfig(meta);
+        meta.setEnabled(getEnabledFromConfig(meta));
 
         if (meta.isEnabled()) {
             parseAndAddProxies(pulse);
@@ -94,8 +94,10 @@ public class PulseManager {
         }
     }
 
-    private void getEnabledFromConfig(PulseMeta meta) {
+    private boolean getEnabledFromConfig(PulseMeta meta) {
+        if (meta.isForced()) return true;
         // TODO: Check configuration and set enabled flag as needed.
+        return true;
     }
 
     private void parseAndAddProxies(IPulse pulse) {
@@ -109,6 +111,7 @@ public class PulseManager {
                     switch (FMLCommonHandler.instance().getSide()) {
                         case CLIENT:
                             f.set(pulse, Class.forName(p.client()).newInstance());
+                            break;
                         default:
                             f.set(pulse, Class.forName(p.server()).newInstance());
                     }
