@@ -21,6 +21,6 @@ io.drakon.pulsar.testing.*
 io.drakon.pulsar.internal.Repo
 ```
 
-This may leave some danging references for the logger, replace these as needed.
+This may leave some dangling references for the logger, replace these as needed.
 
 **Always change the package identifier when repackaging to avoid namespace clashes!**
