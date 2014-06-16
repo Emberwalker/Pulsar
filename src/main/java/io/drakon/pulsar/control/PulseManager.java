@@ -13,7 +13,7 @@ import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import io.drakon.pulsar.internal.pulse.PulseMeta;
+import io.drakon.pulsar.internal.PulseMeta;
 import io.drakon.pulsar.pulse.IPulse;
 import io.drakon.pulsar.pulse.Pulse;
 import io.drakon.pulsar.pulse.PulseProxy;
