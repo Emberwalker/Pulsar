@@ -4,15 +4,14 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import io.drakon.pulsar.internal.Configuration;
 import io.drakon.pulsar.internal.PulseMeta;
+import io.drakon.pulsar.internal.logging.ILogger;
+import io.drakon.pulsar.internal.logging.LogManager;
 import io.drakon.pulsar.pulse.IPulse;
 import io.drakon.pulsar.pulse.Pulse;
 import io.drakon.pulsar.pulse.PulseProxy;
@@ -24,9 +23,10 @@ import io.drakon.pulsar.pulse.PulseProxy;
  *
  * @author Arkan <arkan@drakon.io>
  */
+@SuppressWarnings("unused")
 public class PulseManager {
 
-    private final Logger log;
+    private final ILogger log;
     private final boolean useConfig;
     private final String configName;
 

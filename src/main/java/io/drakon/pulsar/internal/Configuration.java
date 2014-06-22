@@ -4,14 +4,13 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.util.*;
 
-import org.apache.logging.log4j.Logger;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import cpw.mods.fml.common.Loader;
+import io.drakon.pulsar.internal.logging.ILogger;
 
 /**
  * Gson Configuration helper.
@@ -22,7 +21,7 @@ public class Configuration {
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private final String confPath;
-    private final Logger logger;
+    private final ILogger logger;
 
     private Map<String, Boolean> modules;
 
@@ -34,7 +33,7 @@ public class Configuration {
      * @param confName The config file name (without path or .json suffix)
      * @param logger The logger to send debug info to.
      */
-    public Configuration(String confName, Logger logger) {
+    public Configuration(String confName, ILogger logger) {
         this.confPath = Loader.instance().getConfigDir().toString() + File.separator + confName + ".json";
         this.logger = logger;
         this.modules = getModulesFromJson();
