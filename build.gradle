@@ -132,9 +132,9 @@ apply plugin: 'maven'
 uploadArchives {
     repositories {
         mavenDeployer {
-            repository(url: "file://${env.DEPLOY_DIR}")
+            repository(url: "file://${DEPLOY_DIR}")
         }
     }
 }
 
-uploadArchives.onlyIf { return env.DEPLOY_DIR != null }
+uploadArchives.onlyIf { return DEPLOY_DIR != null }
