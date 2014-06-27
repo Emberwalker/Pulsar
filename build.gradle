@@ -48,7 +48,9 @@ apply plugin: 'forge'
 // Grab system env
 def env = System.getenv()
 
-version = mc_ver + "-" + mod_version
+group = "io.drakon"
+version = mod_version
+archivesBaseName = "Pulsar"
 
 def in_jenkins = false
 // Get Jenkins metadata
@@ -78,20 +80,6 @@ if (!in_jenkins) {
     branch = env.GIT_BRANCH.minus("origin/")
 }
 
-// If not on master, add branch to jar name
-if (branch != null && !branch.equals("master")) {
-    version += "-" + branch
-} else if (hash != null) {
-    version += "-" + hash
-} else {
-    version += "-" + "UNKNOWN"
-}
-
-// Version tag for jar file name
-if (env.BUILD_NUMBER != null) {
-    version += "-" + env.BUILD_NUMBER
-}
-
 // Get Git metadata (if in Jenkins)
 def gitManifest = manifest {
     if (env.GIT_BRANCH != null) {
@@ -114,7 +102,7 @@ processResources {
     // Make sure this gets re-executed on updates.
     inputs.property "version", mod_version
     inputs.property "MCversion", mc_ver
-    
+
     // Process mcmod.info
     from(sourceSets.main.resources.srcDirs) {
         include '**/*.info'
@@ -136,3 +124,17 @@ jar {
         from jenkinsManifest, gitManifest
     }
 }
+
+//================================================
+// Maven deployment
+apply plugin: 'maven'
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "file://${env.DEPLOY_DIR}")
+        }
+    }
+}
+
+uploadArchives.onlyIf { return env.DEPLOY_DIR != null }
