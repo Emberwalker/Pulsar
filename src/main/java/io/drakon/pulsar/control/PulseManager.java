@@ -2,10 +2,10 @@ package io.drakon.pulsar.control;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -77,20 +77,33 @@ public class PulseManager {
         if (blockNewRegistrations) throw new RuntimeException("A mod tried to register a plugin after preinit! Pulse: "
                 + pulse);
 
-        String id, description;
+        String id, description, deps;
         boolean forced, enabled;
 
         try {
             Pulse p = pulse.getClass().getAnnotation(Pulse.class);
             id = p.id();
             description = p.description();
+            deps = p.modsRequired();
             forced = p.forced();
             enabled = p.defaultEnable();
         } catch (NullPointerException ex) {
             throw new RuntimeException("Could not parse @Pulse annotation for Pulse: " + pulse);
         }
 
-        if (description.equals("")) description = null; // Work around Java not allowing default-null fields.
+        // Work around Java not allowing default-null fields.
+        if (description.equals("")) description = null;
+
+        if (!deps.equals("")) {
+            String[] parsedDeps = deps.split(";");
+            for (String s : parsedDeps) {
+                if (!Loader.isModLoaded(s)) {
+                    log.info("Skipping Pulse " + id + "; missing dependency: " + s);
+                    enabled = false;
+                    break;
+                }
+            }
+        }
 
         PulseMeta meta = new PulseMeta(id, description, forced, enabled);
         meta.setEnabled(getEnabledFromConfig(meta));

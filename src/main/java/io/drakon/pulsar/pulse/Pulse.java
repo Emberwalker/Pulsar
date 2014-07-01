@@ -23,6 +23,11 @@ public @interface Pulse {
     public String description() default "";
 
     /**
+     * @return Dependant mod IDs, seperated by ; as in FML. Skips checks when undefined.
+     */
+    public String modsRequired() default "";
+
+    /**
      * @return Whether this Pulse is mandatory or not (true -> mandatory).
      */
     public boolean forced() default false;
