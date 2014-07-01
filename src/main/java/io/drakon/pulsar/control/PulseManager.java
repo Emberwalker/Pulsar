@@ -1,6 +1,7 @@
 package io.drakon.pulsar.control;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import io.drakon.pulsar.internal.Configuration;
 import io.drakon.pulsar.internal.PulseMeta;
 import io.drakon.pulsar.internal.logging.ILogger;
 import io.drakon.pulsar.internal.logging.LogManager;
+import io.drakon.pulsar.pulse.Handler;
 import io.drakon.pulsar.pulse.IPulse;
 import io.drakon.pulsar.pulse.Pulse;
 import io.drakon.pulsar.pulse.PulseProxy;
@@ -31,7 +33,7 @@ public class PulseManager {
     private final boolean useConfig;
     private final String configName;
 
-    private final HashMap<IPulse, PulseMeta> pulses = new HashMap<IPulse, PulseMeta>();
+    private final HashMap<Object, PulseMeta> pulses = new HashMap<Object, PulseMeta>();
 
     private boolean blockNewRegistrations = false;
     private Configuration conf = null;
@@ -71,7 +73,7 @@ public class PulseManager {
      *
      * @param pulse The Pulse to register.
      */
-    public void registerPulse(IPulse pulse) {
+    public void registerPulse(Object pulse) {
         if (blockNewRegistrations) throw new RuntimeException("A mod tried to register a plugin after preinit! Pulse: "
                 + pulse);
 
@@ -106,7 +108,13 @@ public class PulseManager {
         return conf.isModuleEnabled(meta.getId(), meta.isEnabled());
     }
 
-    private void parseAndAddProxies(IPulse pulse) {
+    /**
+     * @deprecated FML handles proxies now.
+     *
+     * @param pulse Pulse to parse for proxy annotations.
+     */
+    @Deprecated
+    private void parseAndAddProxies(Object pulse) {
         try {
             for (Field f : pulse.getClass().getDeclaredFields()) {
                 log.debug("Parsing field: " + f);
@@ -122,7 +130,8 @@ public class PulseManager {
         }
     }
 
-    private void setProxyField(IPulse pulse, Field f, String client, String server) throws Exception {
+    @Deprecated
+    private void setProxyField(Object pulse, Field f, String client, String server) throws Exception {
         boolean accessible = f.isAccessible();
         f.setAccessible(true);
         switch (FMLCommonHandler.instance().getSide()) {
@@ -137,23 +146,62 @@ public class PulseManager {
 
     public void preInit(FMLPreInitializationEvent evt) {
         blockNewRegistrations = true;
-        for (Map.Entry<IPulse, PulseMeta> e : pulses.entrySet()) {
+        for (Map.Entry<Object, PulseMeta> e : pulses.entrySet()) {
             log.debug("Preinitialising Pulse " + e.getValue().getId() + "...");
-            e.getKey().preInit(evt);
+            if (e.getKey() instanceof IPulse) { // Deprecated IPulse handling
+                IPulse ip = (IPulse)e.getKey();
+                ip.preInit(evt);
+            } else findAndInvokeHandlers(e.getKey(), evt);
         }
     }
 
     public void init(FMLInitializationEvent evt) {
-        for (Map.Entry<IPulse, PulseMeta> e : pulses.entrySet()) {
+        for (Map.Entry<Object, PulseMeta> e : pulses.entrySet()) {
             log.debug("Initialising Pulse " + e.getValue().getId() + "...");
-            e.getKey().init(evt);
+
+            if (e.getKey() instanceof IPulse) { // Deprecated IPulse handling
+                IPulse ip = (IPulse)e.getKey();
+                ip.init(evt);
+                log.warn("Pulse " + e.getValue().getId() + " is using the deprecated IPulse interface.");
+                log.warn("This will be removed in the next major version (Pulsar 1.x) - Please switch to @Handler!");
+            } else findAndInvokeHandlers(e.getKey(), evt);
         }
     }
 
     public void postInit(FMLPostInitializationEvent evt) {
-        for (Map.Entry<IPulse, PulseMeta> e : pulses.entrySet()) {
+        for (Map.Entry<Object, PulseMeta> e : pulses.entrySet()) {
             log.debug("Postinitialising Pulse " + e.getValue().getId() + "...");
-            e.getKey().postInit(evt);
+
+            if (e.getKey() instanceof IPulse) { // Deprecated IPulse handling
+                IPulse ip = (IPulse)e.getKey();
+                ip.postInit(evt);
+            } else findAndInvokeHandlers(e.getKey(), evt);
+        }
+    }
+
+    /**
+     * Parse an object for a matching handler for the given object.
+     *
+     * @param pulse Object to inspect for Handlers
+     * @param evt The event object
+     */
+    @SuppressWarnings("unchecked")
+    private void findAndInvokeHandlers(Object pulse, Object evt) {
+        for (Method m : pulse.getClass().getDeclaredMethods()) {
+            try {
+                if (m.getAnnotation(Handler.class) == null) continue; // Ignore non-@Handler methods
+
+                Class[] pTypes = m.getParameterTypes();
+                if (pTypes.length != 1) continue;
+
+                Class pt = pTypes[0];
+                if (pt.isAssignableFrom(evt.getClass())) {
+                    m.invoke(pulse, evt);
+                }
+            } catch (Exception ex) {
+                log.warn("Caught exception in findAndInvokeHandlers: " + ex);
+                ex.printStackTrace();
+            }
         }
     }
 
