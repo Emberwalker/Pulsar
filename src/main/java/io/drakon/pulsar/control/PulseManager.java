@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -110,22 +111,28 @@ public class PulseManager {
             for (Field f : pulse.getClass().getDeclaredFields()) {
                 log.debug("Parsing field: " + f);
                 PulseProxy p = f.getAnnotation(PulseProxy.class);
-                if (p != null) {
-                    boolean accessible = f.isAccessible();
-                    f.setAccessible(true);
-                    switch (FMLCommonHandler.instance().getSide()) {
-                        case CLIENT:
-                            f.set(pulse, Class.forName(p.client()).newInstance());
-                            break;
-                        default:
-                            f.set(pulse, Class.forName(p.server()).newInstance());
-                    }
-                    f.setAccessible(accessible);
+                if (p != null) { // Support for deprecated PulseProxy annotation
+                    log.warn("Pulse " + pulse + " used the deprecated PulseProxy annotation. As of Pulsar 0.1.0, it's now preferred to use FML's SidedProxy annotation.");
+                    log.warn("The old PulseProxy parsing will be removed in the next breaking update (Pulsar 1.x).");
+                    setProxyField(pulse, f, p.client(), p.server());
                 }
             }
         } catch (Exception ex) {
             throw new RuntimeException("Pulse annotation parsing failed for Pulse " + pulse + "; " + ex);
         }
+    }
+
+    private void setProxyField(IPulse pulse, Field f, String client, String server) throws Exception {
+        boolean accessible = f.isAccessible();
+        f.setAccessible(true);
+        switch (FMLCommonHandler.instance().getSide()) {
+            case CLIENT:
+                f.set(pulse, Class.forName(client).newInstance());
+                break;
+            default:
+                f.set(pulse, Class.forName(server).newInstance());
+        }
+        f.setAccessible(accessible);
     }
 
     public void preInit(FMLPreInitializationEvent evt) {
