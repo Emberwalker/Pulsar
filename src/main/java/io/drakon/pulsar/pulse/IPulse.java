@@ -7,8 +7,11 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 /**
  * Base interface for all Pulsar modules ("pulses").
  *
+ * @deprecated Use the new {@link Handler} annotation.
+ *
  * @author Arkan <arkan@drakon.io>
  */
+@Deprecated
 public interface IPulse {
 
     /**
