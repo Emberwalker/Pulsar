@@ -7,17 +7,22 @@ package io.drakon.pulsar.internal;
  */
 public class PulseMeta {
 
-    private String id;
+    private String id, description;
     private boolean forced, enabled;
 
-    public PulseMeta(String id, boolean forced, boolean enabled) {
+    public PulseMeta(String id, String description, boolean forced, boolean enabled) {
         this.id = id;
+        this.description = description;
         this.forced = forced;
         this.enabled = enabled;
     }
 
     public String getId() {
         return id;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public boolean isForced() {

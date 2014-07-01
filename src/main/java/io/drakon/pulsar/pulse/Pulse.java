@@ -18,6 +18,11 @@ public @interface Pulse {
     public String id();
 
     /**
+     * @return This Pulses description, human-readable for config files. Can be blank.
+     */
+    public String description() default "";
+
+    /**
      * @return Whether this Pulse is mandatory or not (true -> mandatory).
      */
     public boolean forced() default false;

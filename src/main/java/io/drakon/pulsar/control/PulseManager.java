@@ -26,7 +26,7 @@ import io.drakon.pulsar.pulse.PulseProxy;
  *
  * @author Arkan <arkan@drakon.io>
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "deprecated"})
 public class PulseManager {
 
     private final ILogger log;
@@ -77,19 +77,22 @@ public class PulseManager {
         if (blockNewRegistrations) throw new RuntimeException("A mod tried to register a plugin after preinit! Pulse: "
                 + pulse);
 
-        String id;
+        String id, description;
         boolean forced, enabled;
 
         try {
             Pulse p = pulse.getClass().getAnnotation(Pulse.class);
             id = p.id();
+            description = p.description();
             forced = p.forced();
             enabled = p.defaultEnable();
         } catch (NullPointerException ex) {
             throw new RuntimeException("Could not parse @Pulse annotation for Pulse: " + pulse);
         }
 
-        PulseMeta meta = new PulseMeta(id, forced, enabled);
+        if (description.equals("")) description = null; // Work around Java not allowing default-null fields.
+
+        PulseMeta meta = new PulseMeta(id, description, forced, enabled);
         meta.setEnabled(getEnabledFromConfig(meta));
 
         if (meta.isEnabled()) {
@@ -105,7 +108,7 @@ public class PulseManager {
             conf = new Configuration(configName, log);
         }
 
-        return conf.isModuleEnabled(meta.getId(), meta.isEnabled());
+        return conf.isModuleEnabled(meta);
     }
 
     /**
