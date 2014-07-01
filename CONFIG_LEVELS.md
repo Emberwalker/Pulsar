@@ -10,4 +10,5 @@
 - Introduced in Pulsar 0.1.x
 - Adds configVersion tag
 - All modules have an Entry of form {'enabled': bool, 'description': string}
+- The `description` field is nullable.
 - Config is an array of String: Entry pairs
