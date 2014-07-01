@@ -118,11 +118,26 @@ processResources {
 //================================================
 // Jar tasks
 
+task sourceJar(type: Jar, dependsOn:classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn:javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
 // Merge Jenkins and Git manifests to form final manifest in final release jar
 jar {
     manifest {
         from jenkinsManifest, gitManifest
     }
+}
+
+artifacts {
+    archives sourceJar
+    archives javadocJar
 }
 
 //================================================
