@@ -6,12 +6,12 @@ import java.util.*;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import io.drakon.pulsar.config.IConfiguration;
 import io.drakon.pulsar.internal.Configuration;
-import io.drakon.pulsar.internal.PulseMeta;
+import io.drakon.pulsar.pulse.PulseMeta;
 import io.drakon.pulsar.internal.logging.ILogger;
 import io.drakon.pulsar.internal.logging.LogManager;
 import io.drakon.pulsar.pulse.Handler;
@@ -31,12 +31,12 @@ public class PulseManager {
 
     private final ILogger log;
     private final boolean useConfig;
-    private final String configName;
 
     private final HashMap<Object, PulseMeta> pulses = new HashMap<Object, PulseMeta>();
 
     private boolean blockNewRegistrations = false;
-    private Configuration conf = null;
+    private boolean configLoaded = false;
+    private IConfiguration conf;
 
     /**
      * Configuration-less constructor.
@@ -49,7 +49,7 @@ public class PulseManager {
     public PulseManager(String modId) {
         log = LogManager.getLogger("PulseManager-" + modId);
         useConfig = false;
-        configName = null;
+        conf = null;
     }
 
     /**
@@ -63,7 +63,22 @@ public class PulseManager {
     public PulseManager(String modId, String configName) {
         log = LogManager.getLogger("PulseManager-" + modId);
         useConfig = true;
-        this.configName = configName;
+        conf = new Configuration(configName, log);
+    }
+
+    /**
+     * Custom configuration-using constructor.
+     *
+     * Don't like JSON? Heathen. Lets you handle configuration, to whatever media you like - File, database, death star.
+     * Whatever really. See {@link io.drakon.pulsar.config.IConfiguration}.
+     *
+     * @param modId The parents ModID.
+     * @param config Configuration handler.
+     */
+    public PulseManager(String modId, IConfiguration config) {
+        log = LogManager.getLogger("PulseManager-" + modId);
+        useConfig = true;
+        conf = config;
     }
 
     /**
@@ -76,6 +91,10 @@ public class PulseManager {
     public void registerPulse(Object pulse) {
         if (blockNewRegistrations) throw new RuntimeException("A mod tried to register a plugin after preinit! Pulse: "
                 + pulse);
+        if (!configLoaded) {
+            conf.load();
+            configLoaded = true;
+        }
 
         String id, description, deps;
         boolean forced, enabled;
@@ -117,10 +136,6 @@ public class PulseManager {
     private boolean getEnabledFromConfig(PulseMeta meta) {
         if (meta.isForced() || !useConfig) return true; // Forced or no config set.
 
-        if (conf == null) {
-            conf = new Configuration(configName, log);
-        }
-
         return conf.isModuleEnabled(meta);
     }
 
@@ -161,7 +176,9 @@ public class PulseManager {
     }
 
     public void preInit(FMLPreInitializationEvent evt) {
+        if (!blockNewRegistrations) conf.flush(); // First preInit call, so flush config
         blockNewRegistrations = true;
+
         for (Map.Entry<Object, PulseMeta> e : pulses.entrySet()) {
             log.debug("Preinitialising Pulse " + e.getValue().getId() + "...");
             if (e.getKey() instanceof IPulse) { // Deprecated IPulse handling

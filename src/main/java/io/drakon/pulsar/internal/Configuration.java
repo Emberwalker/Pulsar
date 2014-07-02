@@ -1,7 +1,6 @@
 package io.drakon.pulsar.internal;
 
 import java.io.*;
-import java.lang.reflect.Type;
 import java.util.*;
 
 import com.google.gson.Gson;
@@ -10,14 +9,16 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import cpw.mods.fml.common.Loader;
+import io.drakon.pulsar.config.IConfiguration;
 import io.drakon.pulsar.internal.logging.ILogger;
+import io.drakon.pulsar.pulse.PulseMeta;
 
 /**
- * Gson Configuration helper.
+ * Default Gson Configuration helper.
  *
  * @author Arkan <arkan@drakon.io>
  */
-public class Configuration {
+public class Configuration implements IConfiguration {
 
     private static final int CONFIG_LEVEL = 1;
 
@@ -38,24 +39,27 @@ public class Configuration {
     public Configuration(String confName, ILogger logger) {
         this.confPath = Loader.instance().getConfigDir().toString() + File.separator + confName + ".json";
         this.logger = logger;
+    }
+
+    @Override
+    public void load() {
         getModulesFromJson();
     }
 
-    /**
-     * Gets whether the given module is enabled in the config.
-     *
-     * @param meta The pulse metadata.
-     * @return Whether the module is enabled.
-     */
+    @Override
     public boolean isModuleEnabled(PulseMeta meta) {
         ConfigEntry entry = modules.get(meta.getId());
         if (entry == null) {
             modules.put(meta.getId(), new ConfigEntry(meta.isEnabled(), meta.getDescription()));
-            writeModulesToJson();
             return meta.isEnabled();
         } else {
             return entry.getEnabled();
         }
+    }
+
+    @Override
+    public void flush() {
+        writeModulesToJson();
     }
 
     private void getModulesFromJson() {

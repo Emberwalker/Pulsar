@@ -1,4 +1,4 @@
-package io.drakon.pulsar.internal;
+package io.drakon.pulsar.pulse;
 
 /**
  * Metadata wrapper for parsed @Pulse metadata.
