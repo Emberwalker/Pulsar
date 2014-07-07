@@ -32,7 +32,7 @@ public class PulseManager {
     private final ILogger log;
     private final boolean useConfig;
 
-    private final HashMap<Object, PulseMeta> pulses = new HashMap<Object, PulseMeta>();
+    private final LinkedHashMap<Object, PulseMeta> pulses = new LinkedHashMap<Object, PulseMeta>();
 
     private boolean blockNewRegistrations = false;
     private boolean configLoaded = false;
