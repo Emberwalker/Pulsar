@@ -1,5 +1,8 @@
 ## Pulsar Changelog
 
+### Version 0.3.0
+- Change to LinkedHashMap in PulseManager to preserve ordering.
+
 ### Version 0.2.0
 - Allow custom configuration handlers via IConfiguration.
 - Add modsRequired field to @Pulse.
