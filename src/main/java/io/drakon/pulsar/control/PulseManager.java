@@ -97,7 +97,7 @@ public class PulseManager {
         }
 
         String id, description, deps;
-        boolean forced, enabled;
+        boolean forced, enabled, missingDeps = false;
 
         try {
             Pulse p = pulse.getClass().getAnnotation(Pulse.class);
@@ -118,6 +118,7 @@ public class PulseManager {
             for (String s : parsedDeps) {
                 if (!Loader.isModLoaded(s)) {
                     log.info("Skipping Pulse " + id + "; missing dependency: " + s);
+                    missingDeps = true;
                     enabled = false;
                     break;
                 }
@@ -125,7 +126,7 @@ public class PulseManager {
         }
 
         PulseMeta meta = new PulseMeta(id, description, forced, enabled);
-        meta.setEnabled(getEnabledFromConfig(meta));
+        meta.setEnabled(!missingDeps && getEnabledFromConfig(meta));
 
         if (meta.isEnabled()) {
             parseAndAddProxies(pulse);
