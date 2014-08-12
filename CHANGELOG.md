@@ -1,5 +1,8 @@
 ## Pulsar Changelog
 
+### Version 0.4.0
+- Enable mod dependencies (by @Parker8283)
+
 ### Version 0.3.0
 - Change to LinkedHashMap in PulseManager to preserve ordering.
 

@@ -181,11 +181,13 @@ public class PulseManager {
         blockNewRegistrations = true;
 
         for (Map.Entry<Object, PulseMeta> e : pulses.entrySet()) {
-            log.debug("Preinitialising Pulse " + e.getValue().getId() + "...");
-            if (e.getKey() instanceof IPulse) { // Deprecated IPulse handling
-                IPulse ip = (IPulse)e.getKey();
-                ip.preInit(evt);
-            } else findAndInvokeHandlers(e.getKey(), evt);
+            if(hasRequiredPulses(e)) {
+                log.debug("Preinitialising Pulse " + e.getValue().getId() + "...");
+                if (e.getKey() instanceof IPulse) { // Deprecated IPulse handling
+                    IPulse ip = (IPulse)e.getKey();
+                    ip.preInit(evt);
+                } else findAndInvokeHandlers(e.getKey(), evt);
+            }
         }
     }
 
@@ -239,4 +241,26 @@ public class PulseManager {
         }
     }
 
+    private boolean hasRequiredPulses(Map.Entry<Object, PulseMeta> entry) {
+        String deps = entry.getKey().getClass().getAnnotation(Pulse.class).pulsesRequired();
+        if (!deps.equals("")) {
+            String[] parsedDeps = deps.split(";");
+            for (String s : parsedDeps) {
+                if (!isPulseLoaded(s)) {
+                    log.info("Skipping Pulse " + entry.getValue().getId() + "; missing pulse: " + s);
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isPulseLoaded(String pulseId) {
+        for(Map.Entry<Object, PulseMeta> entry : pulses.entrySet()) {
+            if(entry.getValue().getId().equals(pulseId)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
