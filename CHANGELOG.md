@@ -1,5 +1,8 @@
 ## Pulsar Changelog
 
+### Version 0.5.0
+- Crash Callable support for each PulseManager created.
+
 ### Version 0.4.0
 - Enable pulse dependencies (by @Parker8283)
 
