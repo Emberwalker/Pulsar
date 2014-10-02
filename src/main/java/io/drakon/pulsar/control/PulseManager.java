@@ -1,6 +1,7 @@
 package io.drakon.pulsar.control;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -11,6 +12,7 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import io.drakon.pulsar.config.IConfiguration;
 import io.drakon.pulsar.internal.Configuration;
+import io.drakon.pulsar.internal.CrashHandler;
 import io.drakon.pulsar.pulse.PulseMeta;
 import io.drakon.pulsar.internal.logging.ILogger;
 import io.drakon.pulsar.internal.logging.LogManager;
@@ -29,7 +31,7 @@ import io.drakon.pulsar.pulse.PulseProxy;
 @SuppressWarnings({"unused", "deprecated"})
 public class PulseManager {
 
-    private final ILogger log;
+    private ILogger log;
     private final boolean useConfig;
 
     private final LinkedHashMap<Object, PulseMeta> pulses = new LinkedHashMap<Object, PulseMeta>();
@@ -47,7 +49,7 @@ public class PulseManager {
      */
     @Deprecated
     public PulseManager(String modId) {
-        log = LogManager.getLogger("PulseManager-" + modId);
+        init(modId);
         useConfig = false;
         conf = null;
     }
@@ -61,7 +63,7 @@ public class PulseManager {
      * @param configName The config file name.
      */
     public PulseManager(String modId, String configName) {
-        log = LogManager.getLogger("PulseManager-" + modId);
+        init(modId);
         useConfig = true;
         conf = new Configuration(configName, log);
     }
@@ -76,9 +78,21 @@ public class PulseManager {
      * @param config Configuration handler.
      */
     public PulseManager(String modId, IConfiguration config) {
-        log = LogManager.getLogger("PulseManager-" + modId);
+        init(modId);
         useConfig = true;
         conf = config;
+    }
+
+    /**
+     * Shared initialiser code between all the constructors.
+     *
+     * Currently creates the logger and crash callable.
+     *
+     * @param modId The parents ModID.
+     */
+    private void init(String modId) {
+        log = LogManager.getLogger("PulseManager-" + modId);
+        FMLCommonHandler.instance().registerCrashCallable(new CrashHandler(modId, this));
     }
 
     /**
@@ -234,8 +248,11 @@ public class PulseManager {
                 if (pt.isAssignableFrom(evt.getClass())) {
                     m.invoke(pulse, evt);
                 }
-            } catch (Exception ex) {
-                log.warn("Caught exception in findAndInvokeHandlers: " + ex);
+            } catch (ReflectiveOperationException ex) {
+                if (ex instanceof InvocationTargetException) {
+                    throw new RuntimeException(ex.getCause());
+                }
+                log.warn("Caught reflection exception in findAndInvokeHandlers: " + ex);
                 ex.printStackTrace();
             }
         }
@@ -262,5 +279,9 @@ public class PulseManager {
             }
         }
         return false;
+    }
+
+    public Collection<PulseMeta> getAllPulseMetadata() {
+        return pulses.values();
     }
 }
