@@ -1,6 +1,6 @@
 rootProject.name = "Pulsar"
 gradle.ext {
-    pulsar_mod_version = '0.4.0'
+    pulsar_mod_version = '0.5.0'
     pulsar_mc_ver = '1.7.10'
     pulsar_forge_ver = '10.13.0.1180'
 }
