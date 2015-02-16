@@ -1,4 +1,5 @@
 ## Pulsar Changelog
+This project uses [Semantic Versioning (SemVer)](http://semver.org/). It's a library, after all, it's only sensible.
 
 ### Version 1.0.0
 **This is a breaking release!**
