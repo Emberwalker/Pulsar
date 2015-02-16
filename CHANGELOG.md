@@ -1,5 +1,17 @@
 ## Pulsar Changelog
 
+### Version 1.0.0
+**This is a breaking release!**
+- Removed all deprecated facilities.
+- Updated to 1.8.0.
+- Switched event handling to be based directly on Google Event Bus.
+    - Read the docs on @Pulse for advice!
+- Made error sources more clear.
+- Added EventSpy utility pulse for monitoring the internal EventBus.
+    - Load it like a standard Pulse object: `manager.registerPulse(new EventSpy())`
+- New Gson config entries will default to defaultEnable's value, not the current enabled state (thanks, Boni!)
+    - Other IConfiguration providers will need to switch to using `meta.isDefaultEnabled()` to pick up the change.
+
 ### Version 0.5.0
 - Crash Callable support for each PulseManager created.
 

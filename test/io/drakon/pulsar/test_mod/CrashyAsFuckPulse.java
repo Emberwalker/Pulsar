@@ -1,8 +1,10 @@
 package io.drakon.pulsar.test_mod;
 
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import io.drakon.pulsar.pulse.Handler;
+import com.google.common.eventbus.Subscribe;
+import io.drakon.pulsar.internal.logging.LogManager;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import io.drakon.pulsar.pulse.Pulse;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 /**
  * Test Pulse for error handling (CrashHandler)
@@ -12,11 +14,14 @@ import io.drakon.pulsar.pulse.Pulse;
 @Pulse(id = "CrashyBastard", description = "This will crash. Repeatedly.")
 public class CrashyAsFuckPulse {
 
-    @SuppressWarnings("NumericOverflow")
-    @Handler
+    @Subscribe
+    public void preInit(FMLPreInitializationEvent evt) {
+        LogManager.getLogger("CrashyBastard").info("Got preinit evt: " + evt);
+    }
+
+    @Subscribe
     public void init(FMLInitializationEvent evt) {
-        // KAMAKAAAAAAZEEEEEE!
-        int t = 1 / 0;
+        throw new RuntimeException("KAMAKAAAAAAZEEEEEE!");
     }
 
 }
