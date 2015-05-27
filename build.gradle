@@ -42,6 +42,13 @@ repositories {
 
 apply plugin: 'forge'
 
+// Fix an IDEA bug (via Abrar)
+idea {
+    module {
+        inheritOutputDirs = true
+    }
+}
+
 //================================================
 // Jar data
 
