@@ -1,6 +1,9 @@
 ## Pulsar Changelog
 This project uses [Semantic Versioning (SemVer)](http://semver.org/). It's a library, after all, it's only sensible.
 
+### Version 1.0.1
+- Fix Pulse ordering for FML events (moved from single master bus to bus per pulse) - no API change.
+
 ### Version 1.0.0
 **This is a breaking release!**
 - Removed all deprecated facilities.

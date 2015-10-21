@@ -7,8 +7,6 @@ import java.util.Map;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import com.google.common.eventbus.SubscriberExceptionContext;
-import com.google.common.eventbus.SubscriberExceptionHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.FMLModContainer;
 import net.minecraftforge.fml.common.Loader;
@@ -17,6 +15,7 @@ import net.minecraftforge.fml.common.event.FMLEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 import io.drakon.pulsar.config.IConfiguration;
+import io.drakon.pulsar.internal.BusExceptionHandler;
 import io.drakon.pulsar.internal.Configuration;
 import io.drakon.pulsar.internal.CrashHandler;
 import io.drakon.pulsar.pulse.PulseMeta;
@@ -85,7 +84,7 @@ public class PulseManager {
         log = LogManager.getLogger("Pulsar-" + modId);
         FMLCommonHandler.instance().registerCrashCallable(new CrashHandler(modId, this));
         // Attach us to the mods FML bus and setup our own bus
-        bus = new EventBus(new BusExceptionHandler(modId));
+        bus = new EventBus(new BusExceptionHandler(modId, "<*pulsar*>"));
         attachToContainerEventBus(this);
     }
 
@@ -139,8 +138,8 @@ public class PulseManager {
 
         if (meta.isEnabled()) {
             pulses.put(pulse, meta);
-            // Attach Pulse to internal event bus
-            bus.register(pulse);
+            // Attach Pulse to its own internal event bus
+            meta.bus.register(pulse);
         }
     }
 
@@ -181,7 +180,11 @@ public class PulseManager {
     @Subscribe
     public void propagateEvent(FMLEvent evt) {
         if (evt instanceof FMLPreInitializationEvent) preInit((FMLPreInitializationEvent) evt);
-        bus.post(evt);
+        // We use individual buses due to the EventBus class using a Set rather than a List, thus losing the ordering.
+        // This trick is shamelessly borrowed from FML.
+        for (PulseMeta pulse : pulses.values()) {
+            pulse.bus.post(evt);
+        }
     }
 
     private boolean getEnabledFromConfig(PulseMeta meta) {
@@ -226,27 +229,6 @@ public class PulseManager {
 
     public Collection<PulseMeta> getAllPulseMetadata() {
         return pulses.values();
-    }
-
-    /**
-     * Needed because Google EventBus is a derp and by default swallows exceptions (dafuq guys?)
-     */
-    private class BusExceptionHandler implements SubscriberExceptionHandler {
-        private final String id;
-
-        /**
-         * @param id Mod ID to include in exception raises.
-         */
-        public BusExceptionHandler(String id) {
-            this.id = id;
-        }
-
-        @Override
-        public void handleException(Throwable exception, SubscriberExceptionContext ctx) {
-            FMLCommonHandler.instance().raiseException(exception, "Pulsar/" + id + " >> Exception uncaught in ["
-                    + ctx.getSubscriber().getClass().getName() + ":" + ctx.getSubscriberMethod().getName()
-                    + "] for event [" + ctx.getEvent().getClass().getSimpleName() + "]", true);
-        }
     }
 
     @Override
