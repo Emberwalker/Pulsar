@@ -13,11 +13,14 @@ import io.drakon.pulsar.config.IConfiguration;
 import io.drakon.pulsar.internal.logging.ILogger;
 import io.drakon.pulsar.pulse.PulseMeta;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 /**
  * Default Gson Configuration helper.
  *
  * @author Arkan <arkan@drakon.io>
  */
+@ParametersAreNonnullByDefault
 public class Configuration implements IConfiguration {
 
     private static final int CONFIG_LEVEL = 1;

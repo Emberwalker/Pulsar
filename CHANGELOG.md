@@ -1,6 +1,10 @@
 ## Pulsar Changelog
 This project uses [Semantic Versioning (SemVer)](http://semver.org/). It's a library, after all, it's only sensible.
 
+### Version 1.1.1
+- Upgrade internal event bus system to [Flightpath](https://github.com/Emberwalker/Flightpath)
+- Minor private API changes to accommodate this transition. Not that you should be using that anyway.
+
 ### Version 1.0.1
 - Fix Pulse ordering for FML events (moved from single master bus to bus per pulse) - no API change.
 

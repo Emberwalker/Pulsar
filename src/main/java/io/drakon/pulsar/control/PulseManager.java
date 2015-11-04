@@ -7,6 +7,9 @@ import java.util.Map;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import io.drakon.flightpath.Flightpath;
+import io.drakon.flightpath.IExceptionHandler;
+import io.drakon.flightpath.lib.AnnotationLocator;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.FMLModContainer;
 import net.minecraftforge.fml.common.Loader;
@@ -23,6 +26,8 @@ import io.drakon.pulsar.internal.logging.ILogger;
 import io.drakon.pulsar.internal.logging.LogManager;
 import io.drakon.pulsar.pulse.Pulse;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 /**
  * Manager class for a given mods Pulses.
  *
@@ -35,17 +40,19 @@ import io.drakon.pulsar.pulse.Pulse;
  * @author Arkan <arkan@drakon.io>
  */
 @SuppressWarnings("unused")
+@ParametersAreNonnullByDefault
 public class PulseManager {
 
     private ILogger log;
     private final boolean useConfig;
 
     private final LinkedHashMap<Object, PulseMeta> pulses = new LinkedHashMap<Object, PulseMeta>();
+    // Use the Google @Subscribe to avoid confusion/breaking changes.
+    private final Flightpath flightpath = new Flightpath(new AnnotationLocator(Subscribe.class));
 
     private boolean blockNewRegistrations = false;
     private boolean configLoaded = false;
     private IConfiguration conf;
-    private EventBus bus;
     private String id;
 
     /**
@@ -82,16 +89,25 @@ public class PulseManager {
         String modId = Loader.instance().activeModContainer().getModId();
         this.id = modId;
         log = LogManager.getLogger("Pulsar-" + modId);
+        flightpath.setExceptionHandler(new BusExceptionHandler(modId));
         FMLCommonHandler.instance().registerCrashCallable(new CrashHandler(modId, this));
-        // Attach us to the mods FML bus and setup our own bus
-        bus = new EventBus(new BusExceptionHandler(modId, "<*pulsar*>"));
+        // Attach us to the mods FML bus
         attachToContainerEventBus(this);
+    }
+
+    /**
+     * Overrides Pulsars default behaviour when a pulse emits an exception. See Flightpath's documentation.
+     *
+     * @param handler The Flightpath-compatible exception handler to use.
+     */
+    public void setPulseExceptionHandler(IExceptionHandler handler) {
+        flightpath.setExceptionHandler(handler);
     }
 
     /**
      * Register a new Pulse with the manager.
      *
-     * This CANNOT be done after preInit() has been invoked.
+     * This CANNOT be done after preinit has been invoked.
      *
      * @param pulse The Pulse to register.
      */
@@ -138,13 +154,12 @@ public class PulseManager {
 
         if (meta.isEnabled()) {
             pulses.put(pulse, meta);
-            // Attach Pulse to its own internal event bus
-            meta.bus.register(pulse);
+            flightpath.register(pulse);
         }
     }
 
     /**
-     * Helper to attach a given object to the modcontainer event bus.
+     * Helper to attach a given object to the mod container event bus.
      *
      * @param obj Object to register.
      */
@@ -182,9 +197,7 @@ public class PulseManager {
         if (evt instanceof FMLPreInitializationEvent) preInit((FMLPreInitializationEvent) evt);
         // We use individual buses due to the EventBus class using a Set rather than a List, thus losing the ordering.
         // This trick is shamelessly borrowed from FML.
-        for (PulseMeta pulse : pulses.values()) {
-            pulse.bus.post(evt);
-        }
+        flightpath.post(evt);
     }
 
     private boolean getEnabledFromConfig(PulseMeta meta) {
@@ -193,7 +206,7 @@ public class PulseManager {
         return conf.isModuleEnabled(meta);
     }
 
-    public void preInit(FMLPreInitializationEvent evt) {
+    private void preInit(FMLPreInitializationEvent evt) {
         if (!blockNewRegistrations) conf.flush(); // First preInit call, so flush config
         blockNewRegistrations = true;
     }

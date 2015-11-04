@@ -7,6 +7,7 @@
 def mod_version = gradle.ext.pulsar_mod_version
 def mc_ver = gradle.ext.pulsar_mc_ver
 def forge_ver = gradle.ext.pulsar_forge_ver
+def flightpath_ver = gradle.ext.flightpath_ver
 
 //================================================
 // Pre-execute
@@ -38,9 +39,22 @@ repositories {
         name 'MinecraftS3'
         url 'http://s3.amazonaws.com/Minecraft.Download/libraries'
     }
+    maven {
+        name 'Tethys'
+        url 'http://tethys.drakon.io/maven'
+    }
 }
 
 apply plugin: 'forge'
+
+configurations {
+    shade
+    compile.extendsFrom shade
+}
+
+dependencies {
+  shade "io.drakon:flightpath:${flightpath_ver}"
+}
 
 // Fix an IDEA bug (via Abrar)
 idea {
@@ -52,51 +66,11 @@ idea {
 //================================================
 // Jar data
 
-// Grab system env
-def env = System.getenv()
-
 group = "io.drakon"
 version = mod_version
-archivesBaseName = "Pulsar"
-
-def in_jenkins = false
-// Get Jenkins metadata
-def jenkinsManifest = manifest {
-    if (env.BUILD_TAG != null) { // If this works, we'll assume we're in Jenkins atleast.
-        attributes("Jenkins-Build": "true", "Jenkins-Tag": env.BUILD_TAG, "Jenkins-ID": env.BUILD_ID)
-        in_jenkins = true
-    } else {
-        attributes("Jenkins-Build": "false")
-    }
-}
-
-def branch = null
-def hash = null
-def proc1 = "git rev-parse --short HEAD".execute()
-proc1.in.eachLine { line -> hash = line }
-proc1.err.eachLine { line -> println line }
-proc1.waitFor()
-
-
-if (!in_jenkins) {
-    def proc2 = "git rev-parse --abbrev-ref HEAD".execute()
-    proc2.in.eachLine { line -> branch = line }
-    proc2.err.eachLine { line -> println line }
-    proc2.waitFor()
-} else { // In Jenkins
-    branch = env.GIT_BRANCH.minus("origin/")
-}
-
-// Get Git metadata (if in Jenkins)
-def gitManifest = manifest {
-    if (env.GIT_BRANCH != null) {
-        attributes("Git-Branch": branch, "Git-Hash": hash)
-    }
-}
+archivesBaseName = "pulsar"
 
 //================================================
-// Source/Resource Processing and Compilation
-
 // Setup Forge plugin
 minecraft {
     version = mc_ver + "-" + forge_ver
@@ -115,10 +89,15 @@ task javadocJar(type: Jar, dependsOn:javadoc) {
     from javadoc.destinationDir
 }
 
-// Merge Jenkins and Git manifests to form final manifest in final release jar
 jar {
+    configurations.shade.each { dep ->
+        from(project.zipTree(dep)) {
+            exclude 'META-INF', 'META-INF/**'
+        }
+    }
+
     manifest {
-        from jenkinsManifest, gitManifest
+        attributes('Flightpath-Version': flightpath_ver)
     }
 }
 

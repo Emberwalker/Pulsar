@@ -2,11 +2,14 @@ package io.drakon.pulsar.config;
 
 import io.drakon.pulsar.pulse.PulseMeta;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 /**
  * Interface for config handlers.
  *
  * @author Arkan <arkan@drakon.io>
  */
+@ParametersAreNonnullByDefault
 public interface IConfiguration {
 
     /**
