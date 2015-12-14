@@ -150,7 +150,8 @@ public class PulseManager {
         }
 
         PulseMeta meta = new PulseMeta(id, description, forced, enabled, defaultEnabled);
-        meta.setEnabled(!missingDeps && getEnabledFromConfig(meta));
+        meta.setMissingDeps(missingDeps);
+        meta.setEnabled(getEnabledFromConfig(meta));
 
         if (meta.isEnabled()) {
             pulses.put(pulse, meta);
@@ -193,7 +194,7 @@ public class PulseManager {
      * @param evt An event object.
      */
     @Subscribe
-    public void propagateEvent(FMLEvent evt) {
+    public void propagateEvent(Object evt) {
         if (evt instanceof FMLPreInitializationEvent) preInit((FMLPreInitializationEvent) evt);
         // We use individual buses due to the EventBus class using a Set rather than a List, thus losing the ordering.
         // This trick is shamelessly borrowed from FML.

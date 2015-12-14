@@ -13,6 +13,7 @@ public class PulseMeta {
 
     private String id, description;
     private boolean forced, enabled, defaultEnabled;
+    private boolean missingDeps = false;
 
     public PulseMeta(String id, @Nullable String description, boolean forced, boolean enabled, boolean defaultEnabled) {
         this.id = id;
@@ -31,15 +32,19 @@ public class PulseMeta {
     }
 
     public boolean isForced() {
-        return forced;
+        return !missingDeps && forced;
     }
 
     public boolean isEnabled() {
-        return enabled;
+        return !missingDeps && enabled;
     }
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public void setMissingDeps(boolean missing) {
+        missingDeps = missing;
     }
 
     public boolean isDefaultEnabled() {

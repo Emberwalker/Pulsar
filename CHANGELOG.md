@@ -1,6 +1,10 @@
 ## Pulsar Changelog
 This project uses [Semantic Versioning (SemVer)](http://semver.org/). It's a library, after all, it's only sensible.
 
+### Version 1.1.2
+- Fix Pulses with missing dependencies loading (via boni)
+- Forward all events from the Forge bus, not just the FML lifecycle events.
+
 ### Version 1.1.1
 - Upgrade internal event bus system to [Flightpath](https://github.com/Emberwalker/Flightpath)
 - Minor private API changes to accommodate this transition. Not that you should be using that anyway.
