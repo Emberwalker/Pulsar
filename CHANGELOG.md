@@ -1,6 +1,9 @@
 ## Pulsar Changelog
 This project uses [Semantic Versioning (SemVer)](http://semver.org/). It's a library, after all, it's only sensible.
 
+## Version 1.1.3
+- Actually repackage Flightpath to avoid namespace collisions.
+
 ### Version 1.1.2
 - Fix Pulses with missing dependencies loading (via boni)
 - Forward all events from the Forge bus, not just the FML lifecycle events.

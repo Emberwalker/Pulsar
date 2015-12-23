@@ -74,10 +74,21 @@ archivesBaseName = "pulsar"
 // Setup Forge plugin
 minecraft {
     version = mc_ver + "-" + forge_ver
+
+    srgExtra 'PK: io/drakon/flightpath io/drakon/pulsar/repack/flightpath'
 }
 
 //================================================
 // Jar tasks
+
+// Disable Javadoc doclint on JVM 1.8
+if (JavaVersion.current().isJava8Compatible()) {
+    allprojects {
+        tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
+    }
+}
 
 task sourceJar(type: Jar, dependsOn:classes) {
     classifier = 'sources'
