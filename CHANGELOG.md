@@ -1,6 +1,9 @@
 ## Pulsar Changelog
 This project uses [Semantic Versioning (SemVer)](http://semver.org/). It's a library, after all, it's only sensible.
 
+## Version 1.1.4
+- Restore Java 6/7 compatibility by updating Flightpath (seriously people update D: -- arkan)
+
 ## Version 1.1.3
 - Actually repackage Flightpath to avoid namespace collisions.
 
