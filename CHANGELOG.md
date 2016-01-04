@@ -1,6 +1,10 @@
 ## Pulsar Changelog
 This project uses [Semantic Versioning (SemVer)](http://semver.org/). It's a library, after all, it's only sensible.
 
+## Version 1.2.0
+- Remove logging hack and fully move to log4j2 (thus dropping 1.6.x compat)
+- Better log errors caught by Flightpath
+
 ## Version 1.1.4
 - Restore Java 6/7 compatibility by updating Flightpath (seriously people update D: -- arkan)
 

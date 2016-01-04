@@ -14,16 +14,15 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.FMLModContainer;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
-import net.minecraftforge.fml.common.event.FMLEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.drakon.pulsar.config.IConfiguration;
 import io.drakon.pulsar.internal.BusExceptionHandler;
 import io.drakon.pulsar.internal.Configuration;
 import io.drakon.pulsar.internal.CrashHandler;
 import io.drakon.pulsar.pulse.PulseMeta;
-import io.drakon.pulsar.internal.logging.ILogger;
-import io.drakon.pulsar.internal.logging.LogManager;
 import io.drakon.pulsar.pulse.Pulse;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -43,7 +42,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class PulseManager {
 
-    private ILogger log;
+    private Logger log;
     private final boolean useConfig;
 
     private final LinkedHashMap<Object, PulseMeta> pulses = new LinkedHashMap<Object, PulseMeta>();

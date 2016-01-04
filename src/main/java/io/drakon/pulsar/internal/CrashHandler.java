@@ -1,6 +1,7 @@
 package io.drakon.pulsar.internal;
 
 import net.minecraftforge.fml.common.ICrashCallable;
+
 import io.drakon.pulsar.control.PulseManager;
 import io.drakon.pulsar.pulse.PulseMeta;
 

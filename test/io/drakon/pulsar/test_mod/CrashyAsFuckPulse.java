@@ -1,10 +1,10 @@
 package io.drakon.pulsar.test_mod;
 
 import com.google.common.eventbus.Subscribe;
-import io.drakon.pulsar.internal.logging.LogManager;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import io.drakon.pulsar.pulse.Pulse;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Test Pulse for error handling (CrashHandler)

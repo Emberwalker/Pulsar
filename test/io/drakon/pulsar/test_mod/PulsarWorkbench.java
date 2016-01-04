@@ -1,12 +1,12 @@
 package io.drakon.pulsar.test_mod;
 
 import io.drakon.pulsar.debug.EventSpy;
-import io.drakon.pulsar.internal.logging.ILogger;
-import io.drakon.pulsar.internal.logging.LogManager;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import io.drakon.pulsar.control.PulseManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Pulsar Workbench - The dev env test mod of shenanigans.
@@ -18,7 +18,7 @@ import io.drakon.pulsar.control.PulseManager;
 public class PulsarWorkbench {
 
     private static PulseManager mgr;
-    private static ILogger log;
+    private static Logger log;
 
     static {
         mgr = new PulseManager("PulsarWorkbench");
@@ -27,7 +27,7 @@ public class PulsarWorkbench {
         mgr.registerPulse(new EventSpy());
 
         // Comment this out or it'll crash by design.
-        //mgr.registerPulse(new CrashyAsFuckPulse());
+        mgr.registerPulse(new CrashyAsFuckPulse());
     }
 
     @EventHandler
