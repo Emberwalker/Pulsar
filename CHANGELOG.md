@@ -1,6 +1,9 @@
 ## Pulsar Changelog
 This project uses [Semantic Versioning (SemVer)](http://semver.org/). It's a library, after all, it's only sensible.
 
+## Version 1.2.1
+- Fix Pulse dependency checking on other Pulses (via @bonii-xx)
+
 ## Version 1.2.0
 - Remove logging hack and fully move to log4j2 (thus dropping 1.6.x compat)
 - Better log errors caught by Flightpath

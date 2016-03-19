@@ -118,7 +118,7 @@ public class PulseManager {
             configLoaded = true;
         }
 
-        String id, description, deps;
+        String id, description, deps, pulseDeps;
         boolean forced, enabled, defaultEnabled, missingDeps = false;
 
         try {
@@ -126,6 +126,7 @@ public class PulseManager {
             id = p.id();
             description = p.description();
             deps = p.modsRequired();
+            pulseDeps = p.pulsesRequired();
             forced = p.forced();
             enabled = p.defaultEnable();
             defaultEnabled = p.defaultEnable();
@@ -149,7 +150,7 @@ public class PulseManager {
         }
 
         PulseMeta meta = new PulseMeta(id, description, forced, enabled, defaultEnabled);
-        meta.setMissingDeps(missingDeps);
+        meta.setMissingDeps(missingDeps || !hasRequiredPulses(meta, pulseDeps));
         meta.setEnabled(getEnabledFromConfig(meta));
 
         if (meta.isEnabled()) {
@@ -211,13 +212,12 @@ public class PulseManager {
         blockNewRegistrations = true;
     }
 
-    private boolean hasRequiredPulses(Map.Entry<Object, PulseMeta> entry) {
-        String deps = entry.getKey().getClass().getAnnotation(Pulse.class).pulsesRequired();
+    private boolean hasRequiredPulses(PulseMeta meta, String deps) {
         if (!deps.equals("")) {
             String[] parsedDeps = deps.split(";");
             for (String s : parsedDeps) {
                 if (!isPulseLoaded(s)) {
-                    log.info("Skipping Pulse " + entry.getValue().getId() + "; missing pulse: " + s);
+                    log.info("Skipping Pulse " + meta.getId() + "; missing pulse: " + s);
                     return false;
                 }
             }
